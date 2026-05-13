@@ -2,6 +2,10 @@
 
 A full stack realtime web app that eliminates the chaos of coordinating group food orders. Users create a shared room, everyone adds their items in real time, and the app automatically consolidates the order and splits the bill.
 
+## Live Demo
+
+https://group-order-app-frontend.onrender.com/
+
 ## Features
 
 - Create and join rooms via a shared room ID
