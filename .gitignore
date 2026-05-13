@@ -9,3 +9,6 @@ frontend/dist
 
 # General
 .DS_Store
+
+frontend/.env.development
+frontend/.env.production

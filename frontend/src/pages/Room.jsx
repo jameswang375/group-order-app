@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
-const API_URL = 'http://localhost:8000'
+const API_URL = import.meta.env.VITE_API_URL
+const WS_URL = API_URL.replace('http', 'ws')
 
 function Room() {
   const { roomId } = useParams()
@@ -20,7 +21,7 @@ function Room() {
 
   useEffect(() => {
     fetchRoom()
-    const ws = new WebSocket(`ws://localhost:8000/ws/${roomId}`)
+    const ws = new WebSocket(`${WS_URL}/ws/${roomId}`)
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data)
       if (data.event === 'new_order') {
