@@ -33,7 +33,7 @@ manager = ConnectionManager()
 
 app = FastAPI()
 
-origins = os.getenv("ALLOWED_ORIGINS", "https://group-order-app-frontend.onrender.com").split(",")
+origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
 
 app.add_middleware(
     CORSMiddleware,
