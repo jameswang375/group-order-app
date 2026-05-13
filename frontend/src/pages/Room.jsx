@@ -46,12 +46,21 @@ function Room() {
     return () => ws.close()
   }, [roomId])
 
+  function saveToHistory(roomId, roomName) {
+  const history = JSON.parse(localStorage.getItem('recentRooms') || '[]')
+  const filtered = history.filter((r) => r.id !== roomId)
+  const updated = [{ id: roomId, name: roomName, timestamp: Date.now() }, ...filtered].slice(0, 5)
+  localStorage.setItem('recentRooms', JSON.stringify(updated))
+}
+
+
   async function fetchRoom() {
   try {
     const response = await axios.get(`${API_URL}/rooms/${roomId}`)
     setRoom(response.data.room)
     setOrders(response.data.orders)
     setTipPercent(response.data.room.tip_percent)
+    saveToHistory(response.data.room.id, response.data.room.name)
   } catch (e) {
     setError('Room not found.')
   }

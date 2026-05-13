@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -9,6 +10,12 @@ function Home() {
   const [roomName, setRoomName] = useState('')
   const [roomId, setRoomId] = useState('')
   const [error, setError] = useState('')
+  const [recentRooms, setRecentRooms] = useState([])
+  const [recentRoomStatuses, setRecentRoomStatuses] = useState({})
+
+  useEffect(() => {
+  loadRecentRooms()
+}, [])
 
   async function createRoom() {
     if (!roomName.trim()) return setError('Please enter a room name')
@@ -29,6 +36,27 @@ function Home() {
       setError('Room not found. Check the ID and try again.')
     }
   }
+
+  async function loadRecentRooms() {
+  const history = JSON.parse(localStorage.getItem('recentRooms') || '[]')
+  setRecentRooms(history)
+  const statuses = {}
+  await Promise.all(history.map(async (room) => {
+    try {
+      const response = await axios.get(`${API_URL}/rooms/${room.id}`)
+      statuses[room.id] = response.data.room.status
+    } catch (e) {
+      statuses[room.id] = 'deleted'
+    }
+  }))
+  setRecentRoomStatuses(statuses)
+}
+
+function clearHistory() {
+  localStorage.removeItem('recentRooms')
+  setRecentRooms([])
+  setRecentRoomStatuses({})
+}
 
   return (
     <>
@@ -61,6 +89,44 @@ function Home() {
           />
           <button onClick={joinRoom}>Join room</button>
         </div>
+
+        
+          <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div className="section-label">Recent rooms</div>
+              <button
+                onClick={clearHistory}
+                style={{ width: 'auto', padding: '3px 8px', fontSize: '11px', marginBottom: 0, color: '#A32D2D', borderColor: '#f0c0c0', background: '#fff9f9' }}
+              >
+                Clear history
+              </button>
+            </div>
+            {recentRooms.map((room) => (
+              <div
+                key={room.id}
+                onClick={() => recentRoomStatuses[room.id] !== 'deleted' && navigate(`/room/${room.id}`)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '6px 0',
+                  borderBottom: '0.5px solid #f5f5f5',
+                  cursor: recentRoomStatuses[room.id] !== 'deleted' ? 'pointer' : 'default'
+                }}
+              >
+                <div style={{ fontSize: '13px', color: recentRoomStatuses[room.id] === 'deleted' ? '#aaa' : '#1a1a1a' }}>
+                  {room.name}
+                </div>
+                <span className={`badge ${recentRoomStatuses[room.id] === 'closed' || recentRoomStatuses[room.id] === 'deleted' ? 'closed' : ''}`}>
+                  {recentRoomStatuses[room.id] || '...'}
+                </span>
+                <div style={{ fontSize: '11px', color: '#aaa', marginLeft: 'auto' }}>
+                  {new Date(room.timestamp).toLocaleDateString()}
+                </div>
+              </div>
+            ))}
+          </div>
+        
       </div>
     </>
   )
