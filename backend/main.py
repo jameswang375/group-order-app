@@ -33,7 +33,10 @@ manager = ConnectionManager()
 
 app = FastAPI()
 
-origins = os.getenv("ALLOWED_ORIGINS", "https://group-order-app-frontend.onrender.com").split(",")
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "https://group-order-app-frontend.onrender.com")
+print("ALLOWED_ORIGINS value:", repr(allowed_origins))
+origins = allowed_origins.split(",")
+print("Origins list:", origins)
 
 app.add_middleware(
     CORSMiddleware,
