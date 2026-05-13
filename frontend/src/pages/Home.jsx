@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_URL = "/api"
 
 function Home() {
   const navigate = useNavigate()
@@ -89,8 +89,6 @@ function clearHistory() {
           />
           <button onClick={joinRoom}>Join room</button>
         </div>
-
-        
           <div className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <div className="section-label">Recent rooms</div>

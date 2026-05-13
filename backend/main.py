@@ -5,6 +5,10 @@ from typing import Dict
 import json
 from fastapi.middleware.cors import CORSMiddleware
 import os
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from fastapi import HTTPException
+from pathlib import Path
 
 class ConnectionManager:
     def __init__(self):
@@ -31,17 +35,9 @@ class OrderCreate(SQLModel):
 
 manager = ConnectionManager()
 
+
+
 app = FastAPI()
-
-origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 
@@ -60,12 +56,8 @@ def on_startup():
     create_db()
 
 
-@app.get("/rooms")
-def get_rooms(db: Session = Depends(get_db)):
-    rooms = db.exec(select(Room)).all()
-    return rooms
 
-@app.post("/rooms")
+@app.post("/api/rooms")
 def create_room(name: str, db: Session = Depends(get_db)):
     room = Room(name=name)
     db.add(room)
@@ -73,7 +65,7 @@ def create_room(name: str, db: Session = Depends(get_db)):
     db.refresh(room)
     return room
 
-@app.get("/rooms/{room_id}")
+@app.get("/api/rooms/{room_id}")
 def get_room(room_id: str, db: Session = Depends(get_db)):
     room = db.get(Room, room_id)
     if not room:
@@ -81,7 +73,7 @@ def get_room(room_id: str, db: Session = Depends(get_db)):
     orders = db.exec(select(Order).where(Order.room_id == room_id)).all()
     return {"room": room, "orders": orders}
 
-@app.post("/rooms/{room_id}/orders")
+@app.post("/api/rooms/{room_id}/orders")
 async def add_order(room_id: str, order_data: OrderCreate, db: Session = Depends(get_db)):
     room = db.get(Room, room_id)
     if not room:
@@ -98,7 +90,7 @@ async def add_order(room_id: str, order_data: OrderCreate, db: Session = Depends
     })
     return order
 
-@app.patch("/rooms/{room_id}/close")
+@app.patch("/api/rooms/{room_id}/close")
 async def close_room(room_id: str, db: Session = Depends(get_db)):
     room = db.get(Room, room_id)
     if not room:
@@ -112,7 +104,7 @@ async def close_room(room_id: str, db: Session = Depends(get_db)):
     await manager.broadcast(room_id, {"event": "room_closed"})
     return room
 
-@app.delete("/rooms/{room_id}")
+@app.delete("/api/rooms/{room_id}")
 async def delete_room(room_id: str, db: Session = Depends(get_db)):
     room = db.get(Room, room_id)
     if not room:
@@ -125,7 +117,7 @@ async def delete_room(room_id: str, db: Session = Depends(get_db)):
     await manager.broadcast(room_id, {"event": "room_deleted"})
     return {"message": "Room deleted"}
 
-@app.patch("/rooms/{room_id}/tip")
+@app.patch("/api/rooms/{room_id}/tip")
 async def update_tip(room_id: str, tip_percent: float, db: Session = Depends(get_db)):
     room = db.get(Room, room_id)
     if not room:
@@ -143,7 +135,7 @@ async def update_tip(room_id: str, tip_percent: float, db: Session = Depends(get
     return room
 
 
-@app.patch("/rooms/{room_id}/orders/{order_id}")
+@app.patch("/api/rooms/{room_id}/orders/{order_id}")
 async def update_order(room_id: str, order_id: str, order_data: OrderCreate, db: Session = Depends(get_db)):
     room = db.get(Room, room_id)
     if not room:
@@ -166,7 +158,7 @@ async def update_order(room_id: str, order_id: str, order_data: OrderCreate, db:
     return order
 
 
-@app.delete("/rooms/{room_id}/orders/{order_id}")
+@app.delete("/api/rooms/{room_id}/orders/{order_id}")
 async def delete_order(room_id: str, order_id: str, db: Session = Depends(get_db)):
     room = db.get(Room, room_id)
     if not room:
@@ -183,3 +175,16 @@ async def delete_order(room_id: str, order_id: str, db: Session = Depends(get_db
         "order_id": order_id
     })
     return {"message": "Order deleted"}
+
+app.mount(
+    "/assets",
+    StaticFiles(directory="frontend/dist/assets"),
+    name="assets"
+)
+
+@app.get("/{full_path:path}")
+def serve_spa(full_path: str):
+    if full_path.startswith("api") or full_path.startswith("ws"):
+        raise HTTPException(status_code=404)
+
+    return FileResponse("frontend/dist/index.html")
