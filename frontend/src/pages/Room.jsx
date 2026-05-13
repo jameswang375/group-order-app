@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
-const API_URL = import.meta.env.VITE_API_URL
-const WS_URL = API_URL.replace('http', 'ws')
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const WS_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace('http', 'ws')
 
 function Room() {
   const { roomId } = useParams()
