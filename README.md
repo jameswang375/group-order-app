@@ -4,7 +4,7 @@ A full stack realtime web app that eliminates the chaos of coordinating group fo
 
 ## Live Demo
 
-https://group-order-app-frontend.onrender.com/
+https://group-order-app.onrender.com
 
 ## Features
 
