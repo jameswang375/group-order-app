@@ -20,6 +20,7 @@ function Room() {
   const [editingOrder, setEditingOrder] = useState(null)
   const [splitMode, setSplitMode] = useState('individual')
   const [newOrderIds, setNewOrderIds] = useState(new Set())
+  const [showCustomTip, setShowCustomTip] = useState(false)
 
   useEffect(() => {
     fetchRoom()
@@ -237,34 +238,33 @@ function Room() {
                 <button
                   key={pct}
                   className={`tip-preset-btn ${tipPercent === pct ? 'active' : ''}`}
-                  onClick={() => updateTip(pct)}
+                  onClick={() => { updateTip(pct); setShowCustomTip(false) }}
                 >
                   {pct === 0 ? 'None' : `${pct}%`}
                 </button>
               ))}
               <button
-                className={`tip-preset-btn ${!TIP_PRESETS.includes(tipPercent) ? 'active' : ''}`}
-                onClick={() => {
-                  const val = prompt('Enter custom tip %')
-                  if (val !== null) updateTip(val)
-                }}
+                className={`tip-preset-btn ${showCustomTip || !TIP_PRESETS.includes(tipPercent) ? 'active' : ''}`}
+                onClick={() => setShowCustomTip(true)}
               >
                 Custom
               </button>
             </div>
-            {!TIP_PRESETS.includes(tipPercent) && tipPercent > 0 && (
+            {(showCustomTip || !TIP_PRESETS.includes(tipPercent)) && (
               <div className="tip-custom-row">
                 <input
                   type="number"
                   min="0"
                   max="100"
-                  value={tipPercent}
+                  placeholder="Custom %"
+                  value={!TIP_PRESETS.includes(tipPercent) ? tipPercent : ''}
                   onChange={(e) => updateTip(e.target.value)}
+                  autoFocus
                 />
-                <span>% = ${tipAmount.toFixed(2)}</span>
+                <span>{tipPercent > 0 ? `% = $${tipAmount.toFixed(2)}` : '%'}</span>
               </div>
             )}
-            {TIP_PRESETS.includes(tipPercent) && tipPercent > 0 && (
+            {TIP_PRESETS.includes(tipPercent) && tipPercent > 0 && !showCustomTip && (
               <div style={{ fontSize: '12px', color: '#999', marginTop: 2 }}>
                 ${tipAmount.toFixed(2)} tip
               </div>
