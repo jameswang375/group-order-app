@@ -28,9 +28,15 @@ function Home() {
 
   async function joinRoom() {
     if (!roomId.trim()) return setError('Please enter a room ID')
+    let id = roomId.trim()
     try {
-      await axios.get(`${API_URL}/rooms/${roomId}`)
-      navigate(`/room/${roomId}`)
+      const url = new URL(id)
+      const match = url.pathname.match(/\/room\/([^/]+)/)
+      if (match) id = match[1]
+    } catch (_) {}
+    try {
+      await axios.get(`${API_URL}/rooms/${id}`)
+      navigate(`/room/${id}`)
     } catch (e) {
       setError('Room not found. Check the ID and try again.')
     }
