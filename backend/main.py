@@ -178,7 +178,7 @@ async def delete_order(room_id: str, order_id: str, db: Session = Depends(get_db
 
 app.mount(
     "/assets",
-    StaticFiles(directory="frontend/dist/assets"),
+    StaticFiles(directory="../frontend/dist/assets"),
     name="assets"
 )
 
@@ -186,5 +186,4 @@ app.mount(
 def serve_spa(full_path: str):
     if full_path.startswith("api") or full_path.startswith("ws"):
         raise HTTPException(status_code=404)
-
-    return FileResponse("frontend/dist/index.html")
+    return FileResponse("../frontend/dist/index.html")
