@@ -237,7 +237,7 @@ function Room() {
               {TIP_PRESETS.map((pct) => (
                 <button
                   key={pct}
-                  className={`tip-preset-btn ${tipPercent === pct ? 'active' : ''}`}
+                  className={`tip-preset-btn ${!showCustomTip && tipPercent === pct ? 'active' : ''}`}
                   onClick={() => { updateTip(pct); setShowCustomTip(false) }}
                 >
                   {pct === 0 ? 'None' : `${pct}%`}
